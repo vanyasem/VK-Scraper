@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='VK-Scraper',
-    version='1.0.0',
+    version='1.0.0.dev1',
     description='',
     url='https://github.com/vanyasem/VK-Scraper',
     author='Ivan Semkin',
@@ -12,7 +12,11 @@ setup(
         'Development Status :: 1 - Planning',
         'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
+        'Operating System :: OS Independent'
+        'Programming Language :: Python'
+        'Programming Language :: Python :: 2'
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3'
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
