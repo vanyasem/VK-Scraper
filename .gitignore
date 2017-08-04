@@ -124,3 +124,5 @@ $RECYCLE.BIN/
 *.iws
 
 vk_config\.json
+
+*.log
