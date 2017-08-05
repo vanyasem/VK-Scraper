@@ -31,16 +31,18 @@ if sys.version_info < (3, 2):
 
 setup(
     name='VK-Scraper',
-    version='1.0.0.dev2',
+    version='1.0.0',
     description='',
     url='https://github.com/vanyasem/VK-Scraper',
+    download_url='https://github.com/vanyasem/VK-Scraper/archive/1.0.0.tar.gz',
     author='Ivan Semkin',
     author_email='ivan@semkin.ru',
     license='GPL-3.0',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
@@ -50,12 +52,13 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
     install_requires=requires,
     entry_points={
         'console_scripts': [
             'vk-scraper=vk_scraper.app:main',
         ],
     },
+    test_suite='nose.collector',
     keywords=['vk', 'vkontakte', 'scraper', 'download', 'media', 'photos', 'videos', 'stories']
 )
