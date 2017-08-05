@@ -6,3 +6,14 @@ VK Scraper
 
 Inspired by [instagram-scraper](https://github.com/rarcega/instagram-scraper).
 
+```
+virtualenv env
+source env/bin/activate
+python setup.py install
+```
+
+Futurelog:
+
+- Scrape by hashtag
+- Scrape by location
+- Save metadata to file

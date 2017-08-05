@@ -22,16 +22,16 @@ from setuptools import setup, find_packages
 
 setup(
     name='VK-Scraper',
-    version='1.0.0.dev1',
+    version='1.0.0.dev2',
     description='',
     url='https://github.com/vanyasem/VK-Scraper',
     author='Ivan Semkin',
     author_email='ivan@semkin.ru',
-    license='GPL-2.0',
+    license='GPL-3.0',
     classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: End Users/Desktop',
-        'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Operating System :: OS Independent'
         'Programming Language :: Python'
         'Programming Language :: Python :: 2'
