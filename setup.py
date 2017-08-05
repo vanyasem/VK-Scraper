@@ -17,8 +17,17 @@
 ## You should have received a copy of the GNU General Public License
 ## along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
-
+import sys
 from setuptools import setup, find_packages
+
+requires = [
+    'vk_api',
+    'requests>=1.0.4',
+    'tqdm>=3.8.0'
+]
+
+if sys.version_info < (3, 2):
+    requires.append('futures==2.2')
 
 setup(
     name='VK-Scraper',
@@ -42,7 +51,7 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     packages=find_packages(),
-    install_requires=['vk_api', 'tqdm>=3.8.0'],
+    install_requires=requires,
     entry_points={
         'console_scripts': [
             'vk-scraper=vk_scraper.app:main',
