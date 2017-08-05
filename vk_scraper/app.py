@@ -34,6 +34,12 @@ import requests
 import tqdm
 import vk_api
 
+try:
+    reload(sys)  # Python 2.7
+    sys.setdefaultencoding("UTF8")
+except NameError:
+    pass
+
 
 class VkScraper(object):
     """VkScraper scrapes and downloads an VK user's photos, videos, and stories"""
