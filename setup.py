@@ -23,7 +23,7 @@ from setuptools import setup, find_packages
 requires = [
     'vk_api',
     'requests>=1.0.4',
-    'tqdm>=3.8.0'
+    'tqdm>=3.8.0',
 ]
 
 if sys.version_info < (3, 2):
@@ -41,11 +41,11 @@ setup(
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-        'Operating System :: OS Independent'
-        'Programming Language :: Python'
-        'Programming Language :: Python :: 2'
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3'
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
