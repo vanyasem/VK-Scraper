@@ -169,7 +169,7 @@ class VkScraper(object):
 
                     if future.exception() is not None:
                         self.logger.warning(
-                            'Media at {0} generated an exception: {1}'.format(item['photo_1280'], future.exception()))
+                            'Media with ID {0} generated an exception: {1}'.format(item['id'], future.exception()))
 
 
     def make_dst_dir(self, username):
@@ -259,17 +259,21 @@ class VkScraper(object):
     def photos_gen(self, username):
         """Generator of all user's photos"""
         try:
-            # TODO This could use some optimization
-            off = 0
+            offset = 0
+            photos = self.vk.photos.getAll(owner_id=username, count=200, offset=offset)
+            total = photos['count']
+
             while True:
-                response = self.vk.photos.getAll(owner_id=username, count=1, skip_hidden=1, offset=off)
-                if response['more'] == 1 and self.is_new_media(response['items'][0]):
-                    off += 1
-                    yield response['items'][0]
+                for item in photos['items']:
+                    yield item
+
+                if offset + 200 < total and self.is_new_media(photos['items'][-1]):
+                    offset += 200
+                    photos = self.vk.photos.getAll(owner_id=username, count=200, offset=offset)
                 else:
                     return
         except ValueError:
-            self.logger.exception('Failed to get media for ' + username)
+            self.logger.exception('Failed to get photos for ' + username)
 
     def get_photos(self, dst, executor, future_to_item, username):
         """Scrapes the user's albums for photos"""
@@ -278,7 +282,7 @@ class VkScraper(object):
 
         iter = 0
         for item in tqdm.tqdm(self.photos_gen(username), desc='Searching {0} for photos'.format(username),
-                              unit=' media', disable=self.quiet):
+                              unit=' photos', disable=self.quiet):
             if self.is_new_media(item):
                 future = executor.submit(self.download, item, dst)
                 future_to_item[future] = item
@@ -288,7 +292,7 @@ class VkScraper(object):
                 break
 
     def get_videos(self, dst, executor, future_to_item, username):
-        """Scrapes the user's albums for videos"""
+        """Scrapes the user's videos"""
         if 'video' not in self.media_types:
             return
 
