@@ -74,7 +74,8 @@ class VkScraper(object):
         vk_session = vk_api.VkApi(
             self.login_user, self.login_pass,
             auth_handler=self.two_factor_handler,
-            captcha_handler=self.captcha_handler
+            captcha_handler=self.captcha_handler,
+            app_id=6036185
         )
 
         try:
@@ -155,10 +156,8 @@ class VkScraper(object):
             user_id = self.check_user(username)
 
             if user_id:
-                # self.get_profile_pic(dst, executor, future_to_item, user_id)  # TODO get profile pic
-                # self.get_stories(dst, executor, future_to_item, user_id,)  # TODO get stories
                 self.get_photos(dst, executor, future_to_item, user_id)
-                # self.get_videos(dst, executor, future_to_item, user_id)  # TODO get videos
+                self.get_videos(dst, executor, future_to_item, user_id)
 
             # Displays the progress bar of completed downloads. Might not even pop up if all media is downloaded while
             # the above loop finishes.
@@ -223,23 +222,33 @@ class VkScraper(object):
             ('date' not in item) or item.get('date') > self.last_scraped_file_time
 
     @staticmethod
-    def determine_max_res(item):
-        if 'photo_2560' in item:
-            return 'photo_2560'
-        elif 'photo_1280' in item:
-            return 'photo_1280'
-        elif 'photo_807' in item:
-            return 'photo_807'
-        elif 'photo_604' in item:
-            return 'photo_604'
-        elif'photo_130' in item:
-            return 'photo_130'
-        elif 'photo_75' in item:
-            return 'photo_75'
+    def determine_max_media_res(item):
+        if 'duration' in item:
+            if 'photo_800' in item:
+                return 'photo_800'
+            elif 'photo_640' in item:
+                return 'photo_640'
+            elif 'photo_320' in item:
+                return 'photo_320'
+            elif 'photo_130' in item:
+                return 'photo_130'
+        else:
+            if 'photo_2560' in item:
+                return 'photo_2560'
+            elif 'photo_1280' in item:
+                return 'photo_1280'
+            elif 'photo_807' in item:
+                return 'photo_807'
+            elif 'photo_604' in item:
+                return 'photo_604'
+            elif'photo_130' in item:
+                return 'photo_130'
+            elif 'photo_75' in item:
+                return 'photo_75'
 
     def download(self, item, save_dir='./'):
         """Downloads the media file"""
-        url = item[self.determine_max_res(item)]
+        url = item[self.determine_max_media_res(item)]
         base_name = url.split('/')[-1]
         file_path = os.path.join(save_dir, base_name)
 
@@ -256,11 +265,11 @@ class VkScraper(object):
             file_time = item.get('date', time.time())
             os.utime(file_path, (file_time, file_time))
 
-    def photos_gen(self, username):
+    def photos_gen(self, user_id):
         """Generator of all user's photos"""
         try:
             offset = 0
-            photos = self.vk.photos.getAll(owner_id=username, count=200, offset=offset)
+            photos = self.vk.photos.getAll(owner_id=user_id, count=200, offset=offset)
             total = photos['count']
 
             while True:
@@ -269,11 +278,11 @@ class VkScraper(object):
 
                 if offset + 200 < total and self.is_new_media(photos['items'][-1]):
                     offset += 200
-                    photos = self.vk.photos.getAll(owner_id=username, count=200, offset=offset)
+                    photos = self.vk.photos.getAll(owner_id=user_id, count=200, offset=offset)
                 else:
                     return
         except ValueError:
-            self.logger.exception('Failed to get photos for ' + username)
+            self.logger.exception('Failed to get photos for ' + user_id)
 
     def get_photos(self, dst, executor, future_to_item, username):
         """Scrapes the user's albums for photos"""
@@ -291,12 +300,41 @@ class VkScraper(object):
             if self.maximum != 0 and iter >= self.maximum:
                 break
 
+    def videos_gen(self, user_id):
+        """Generator of all user's videos"""
+        try:
+            offset = 0
+            videos = self.vk.video.get(owner_id=user_id, count=200, offset=offset)
+            total = videos['count']
+
+            while True:
+                for item in videos['items']:
+                    if item['owner_id'] == user_id:
+                        yield item
+
+                if offset + 200 < total and self.is_new_media(videos['items'][-1]):
+                    offset += 200
+                    videos = self.vk.video.get(owner_id=user_id, count=200, offset=offset)
+                else:
+                    return
+        except ValueError:
+            self.logger.exception('Failed to get videos for ' + user_id)
+
     def get_videos(self, dst, executor, future_to_item, username):
         """Scrapes the user's videos"""
         if 'video' not in self.media_types:
             return
 
-        raise NotImplementedError
+        iter = 0
+        for item in tqdm.tqdm(self.videos_gen(username), desc='Searching {0} for videos'.format(username),
+                              unit=' videos', disable=self.quiet):
+            if self.is_new_media(item):
+                future = executor.submit(self.download, item, dst)
+                future_to_item[future] = item
+
+            iter += 1
+            if self.maximum != 0 and iter >= self.maximum:
+                break
 
 
 def main():
@@ -353,6 +391,7 @@ def main():
 
     scraper = VkScraper(**vars(args))
 
+    scraper.scrape()
 
 
 if __name__ == '__main__':
