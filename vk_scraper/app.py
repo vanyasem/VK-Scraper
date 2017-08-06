@@ -67,6 +67,7 @@ class VkScraper(object):
 
         self.logged_in = False
         self.vk = None
+        self.tools = None
         self.last_scraped_file_time = 0
 
     def login(self):
@@ -87,6 +88,7 @@ class VkScraper(object):
             return
 
         self.vk = vk_session.get_api()
+        self.tools = vk_api.VkTools(vk_session)
 
     @staticmethod
     def two_factor_handler():
@@ -268,19 +270,10 @@ class VkScraper(object):
     def photos_gen(self, user_id):
         """Generator of all user's photos"""
         try:
-            offset = 0
-            photos = self.vk.photos.getAll(owner_id=user_id, count=200, offset=offset)
-            total = photos['count']
+            photos = self.tools.get_all('photos.getAll', 200, {'owner_id': user_id})
 
-            while True:
-                for item in photos['items']:
-                    yield item
-
-                if offset + 200 < total and self.is_new_media(photos['items'][-1]):
-                    offset += 200
-                    photos = self.vk.photos.getAll(owner_id=user_id, count=200, offset=offset)
-                else:
-                    return
+            for item in photos['items']:
+                yield item
         except ValueError:
             self.logger.exception('Failed to get photos for ' + user_id)
 
@@ -303,22 +296,13 @@ class VkScraper(object):
     def videos_gen(self, user_id):
         """Generator of all user's videos"""
         try:
-            offset = 0
-            videos = self.vk.video.get(owner_id=user_id, count=200, offset=offset)
-            total = videos['count']
+            videos = self.tools.get_all('video.get', 200, {'owner_id': user_id})
 
-            while True:
-                for item in videos['items']:
-                    if item['owner_id'] == user_id:
-                        yield item
-
-                if offset + 200 < total and self.is_new_media(videos['items'][-1]):
-                    offset += 200
-                    videos = self.vk.video.get(owner_id=user_id, count=200, offset=offset)
-                else:
-                    return
+            for item in videos['items']:
+                if item['owner_id'] == user_id:
+                    yield item
         except ValueError:
-            self.logger.exception('Failed to get videos for ' + user_id)
+            self.logger.exception('Failed to get video thumbnails for ' + user_id)
 
     def get_videos(self, dst, executor, future_to_item, username):
         """Scrapes the user's videos"""
@@ -326,8 +310,8 @@ class VkScraper(object):
             return
 
         iter = 0
-        for item in tqdm.tqdm(self.videos_gen(username), desc='Searching {0} for videos'.format(username),
-                              unit=' videos', disable=self.quiet):
+        for item in tqdm.tqdm(self.videos_gen(username), desc='Searching {0} for video thumbnails'.format(username),
+                              unit=' thumbnails', disable=self.quiet):
             if self.is_new_media(item):
                 future = executor.submit(self.download, item, dst)
                 future_to_item[future] = item
