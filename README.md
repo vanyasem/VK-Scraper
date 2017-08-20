@@ -79,10 +79,18 @@ source env/bin/activate
 python setup.py install
 ```
 
+Contributing
+------------
+1. Check open issues or open a new one to start a discussion around
+   your idea or a bug you found
+2. Fork the repository and make your changes
+3. Send a pull request
+
 Futurelog:
 -------
 - Scrape by hashtag
 - Scrape by location
+- Scrape communities
 - Save metadata to file
 - ~~Scrape stories~~ Stories API is private. The only way to get them would be to parse vk.com.
 - ~~Scrape videos~~ Video links are private, too. Parsing them would be easier, though.

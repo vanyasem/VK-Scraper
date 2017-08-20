@@ -339,8 +339,8 @@ def main():
 
     parser.add_argument('username', help='VK user(s) to scrape', nargs='*')
     parser.add_argument('--destination', '-d', default='./', help='Download destination')
-    parser.add_argument('--login-user', '--login_user', '-u', default=None, help='VK login user')
-    parser.add_argument('--login-pass', '--login_pass', '-p', default=None, help='VK login password')
+    parser.add_argument('--login-user', '--login_user', '-u', default=None, help='VK username')
+    parser.add_argument('--login-pass', '--login_pass', '-p', default=None, help='VK password')
     parser.add_argument('--filename', '-f', help='Path to a file containing a list of users to scrape')
     parser.add_argument('--quiet', '-q', default=False, action='store_true', help='Be quiet while scraping')
     parser.add_argument('--maximum', '-m', type=int, default=0, help='Maximum number of items to scrape')
