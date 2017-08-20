@@ -209,7 +209,8 @@ class VkScraper(object):
             self.last_scraped_file_time = int(os.path.getmtime(latest_file))
 
     def check_user(self, username):
-            """Checks whether the user exists or not"""
+        """Checks whether a user or community exists"""
+        try:
             response = self.vk.users.get(user_ids=username)
 
             if response:
@@ -217,6 +218,16 @@ class VkScraper(object):
                     return response[0]['id']
                 except:
                     raise ValueError('User {0} does not exist'.format(username))
+        except vk_api.exceptions.ApiError:
+            response = self.vk.groups.getById(group_id=username)
+
+            if response:
+                try:
+                    return -response[0]['id']
+                except:
+                    raise ValueError('User {0} does not exist'.format(username))
+            else:
+                raise ValueError('User {0} does not exist'.format(username))
 
     def is_new_media(self, item):
         """Returns True if the media is new"""

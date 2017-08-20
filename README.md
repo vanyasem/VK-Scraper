@@ -5,6 +5,8 @@ VK Scraper
 [![PyPI](https://img.shields.io/pypi/v/vk-scraper.svg)](https://pypi.python.org/pypi/VK-Scraper)
 [![Travis](https://img.shields.io/travis/vanyasem/VK-Scraper.svg)](https://travis-ci.org/vanyasem/VK-Scraper)
 
+vk-scraper is a command-line application written in Python that scrapes and downloads VK user's / community's photos and videos. Use responsibly.
+
 Inspired by [instagram-scraper](https://github.com/rarcega/instagram-scraper).
 
 Install
@@ -24,12 +26,12 @@ vk-scraper <username> -u <your username> -p <your password>
 
 To specify multiple users, pass a delimited list of users:
 ```bash
-vk-scraper username1,username2,username3           
+vk-scraper username1,username2,username3
 ```
 
 You can also supply a file containing a list of usernames:
 ```bash
-vk-scraper -f vk_users.txt           
+vk-scraper -f vk_users.txt
 ```
 
 ```
@@ -52,14 +54,14 @@ OPTIONS
 
 --login-pass  -p      VK password
 
---filename    -f      Path to a file containing a list of users to scrape
+--filename    -f      Path to a file containing a list of users / communities to scrape
 
---destination -d      Specify the download destination. By default, media will 
+--destination -d      Specify the download destination. By default, media will
                       be downloaded to <current working directory>/<username>
 
 --retain-username -n  Creates a username subdirectory when the destination flag is set
 
---media-types -t      Specify media types to scrape. Enter as space separated values. 
+--media-types -t      Specify media types to scrape. Enter as space separated values.
                       Valid values are image, video, or none
 
 --latest              Scrape only new media since the last scrape. Uses the last modified
@@ -72,7 +74,7 @@ OPTIONS
 
 Develop
 -------
-Clone the repo and create a virtualenv 
+Clone the repo and create a virtualenv
 ```bash
 virtualenv env
 source env/bin/activate
@@ -90,7 +92,6 @@ Futurelog:
 -------
 - Scrape by hashtag
 - Scrape by location
-- Scrape communities
 - Save metadata to file
 - ~~Scrape stories~~ Stories API is private. The only way to get them would be to parse vk.com.
 - ~~Scrape videos~~ Video links are private, too. Parsing them would be easier, though.
