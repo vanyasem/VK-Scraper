@@ -94,5 +94,4 @@ Futurelog:
 - Scrape by location
 - Save metadata to file
 - ~~Scrape stories~~ Stories API is private. The only way to get them would be to parse vk.com.
-- ~~Scrape videos~~ Video links are private, too. Parsing them would be easier, though.
 - Sort photos by their albums

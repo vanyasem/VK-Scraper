@@ -245,7 +245,7 @@ class VkScraper(object):
                 return 'photo_320'
             elif 'photo_130' in item:
                 return 'photo_130'
-        else:
+        elif 'text' in item:
             if 'photo_2560' in item:
                 return 'photo_2560'
             elif 'photo_1280' in item:
@@ -258,6 +258,8 @@ class VkScraper(object):
                 return 'photo_130'
             elif 'photo_75' in item:
                 return 'photo_75'
+        else:
+            return 'link'
 
     def download(self, item, save_dir='./'):
         """Downloads the media file"""
@@ -312,8 +314,14 @@ class VkScraper(object):
             for item in videos['items']:
                 if item['owner_id'] == user_id:
                     yield item
+                    if 'platform' not in item:
+                        r = requests.get(item['player'])
+                        link = re.findall(r'https://cs.*?mp4', r.text)
+                        if link:
+                            yield {'date': item['date'], 'link': link[0]}
+
         except ValueError:
-            self.logger.exception('Failed to get video thumbnails for ' + user_id)
+            self.logger.exception('Failed to get videos for ' + user_id)
 
     def get_videos(self, dst, executor, future_to_item, username):
         """Scrapes the user's videos"""
@@ -321,8 +329,8 @@ class VkScraper(object):
             return
 
         iter = 0
-        for item in tqdm.tqdm(self.videos_gen(username), desc='Searching {0} for video thumbnails'.format(username),
-                              unit=' thumbnails', disable=self.quiet):
+        for item in tqdm.tqdm(self.videos_gen(username), desc='Searching {0} for videos'.format(username),
+                              unit=' videos', disable=self.quiet):
             if self.is_new_media(item):
                 future = executor.submit(self.download, item, dst)
                 future_to_item[future] = item
@@ -357,7 +365,7 @@ def main():
     parser.add_argument('--maximum', '-m', type=int, default=0, help='Maximum number of items to scrape')
     parser.add_argument('--retain-username', '--retain_username', '-n', action='store_true', default=False,
                         help='Creates username subdirectory when destination flag is set')
-    parser.add_argument('--media-types', '--media_types', '-t', nargs='+', default=['image', 'video', 'story'],
+    parser.add_argument('--media-types', '--media_types', '-t', nargs='+', default=['image', 'video'],
                         help='Specify media types to scrape')
     parser.add_argument('--latest', action='store_true', default=False, help='Scrape new media since the last scrape')
     parser.add_argument('--verbose', '-v', type=int, default=0, help='Logging verbosity level')
