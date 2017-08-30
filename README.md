@@ -5,10 +5,15 @@ VK Scraper
 [![PyPI](https://img.shields.io/pypi/v/vk-scraper.svg)](https://pypi.python.org/pypi/VK-Scraper)
 [![Travis](https://img.shields.io/travis/vanyasem/VK-Scraper.svg)](https://travis-ci.org/vanyasem/VK-Scraper)
 
-vk-scraper is a command-line application written in Python that scrapes and downloads VK user's / community's photos and videos. Use responsibly.
+vk-scraper is a command-line application written in Python that scrapes and downloads VK user's / community's data. Use responsibly.
 
-Inspired by [instagram-scraper](https://github.com/rarcega/instagram-scraper).
+Inspired by [instagram-scraper](https://github.com/rarcega/instagram-scraper)
 
+Features
+--------
+- Scrape user's photos
+- Scrape user's uploaded VK videos
+- Scrape user's external videos thumbnails
 Install
 -------
 To install or update vk-scraper:
@@ -43,10 +48,10 @@ username3
 
 # and so on...
 ```
-*The usernames may be separated by newlines, commas, semicolons, or whitespace.*
+*Usernames may be separated by newlines, commas, semicolons, or whitespace.*
 
-OPTIONS
--------
+Arguments
+---------
 ```
 --help -h             Show help message and exit
 
@@ -88,10 +93,10 @@ Contributing
 2. Fork the repository and make your changes
 3. Send a pull request
 
-Futurelog:
--------
+Futurelog
+---------
 - Scrape by hashtag
 - Scrape by location
-- Save metadata to file
 - ~~Scrape stories~~ Stories API is private. The only way to get them would be to parse vk.com.
+- Save metadata to a file (likes, comments, etc)
 - Sort photos by their albums
