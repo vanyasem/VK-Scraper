@@ -49,7 +49,7 @@ class VkScraper(object):
                             destination='./', retain_username=False,
                             quiet=False, maximum=0,
                             latest=False,
-                            media_types=['image', 'video', 'story'],
+                            media_types=['image', 'video'],
                             verbose=0,
                             )
 
@@ -62,17 +62,19 @@ class VkScraper(object):
 
         # Set up a logger
         self.logger = VkScraper.get_logger(level=logging.DEBUG,
+                                           verbose=default_attr.get('verbose'))
 
         self.session = requests.Session()
 
         self.logged_in = False
         self.vk = None
+        self.vk_session = None
         self.tools = None
         self.last_scraped_file_time = 0
 
     def login(self):
         """Logs in to VK"""
-        vk_session = vk_api.VkApi(
+        self.vk_session = vk_api.VkApi(
             self.login_user, self.login_pass,
             auth_handler=self.two_factor_handler,
             captcha_handler=self.captcha_handler,
@@ -80,15 +82,15 @@ class VkScraper(object):
         )
 
         try:
-            vk_session.auth()
+            self.vk_session.auth()
             self.logged_in = True
         except vk_api.AuthError as error_msg:
             print(error_msg)
             self.logger.error('Login failed for ' + self.login_user)
             return
 
-        self.vk = vk_session.get_api()
-        self.tools = vk_api.VkTools(vk_session)
+        self.vk = self.vk_session.get_api()
+        self.tools = vk_api.VkTools(self.vk_session)
 
     @staticmethod
     def two_factor_handler():
@@ -158,11 +160,12 @@ class VkScraper(object):
             try:
                 user_id = self.check_user(username)
             except:
-                print('Error getting user details for {0}\n'.format(username))
+                print('Error getting user details for {0}'.format(username))
 
             if user_id:
                 self.get_photos(dst, executor, future_to_item, user_id)
                 self.get_videos(dst, executor, future_to_item, user_id)
+                self.get_stories(dst, executor, future_to_item, user_id)
 
             # Displays the progress bar of completed downloads. Might not even pop up if all media is downloaded while
             # the above loop finishes.
@@ -173,7 +176,7 @@ class VkScraper(object):
 
                     if future.exception() is not None:
                         self.logger.warning(
-                            'Media with ID {0} generated an exception: {1}'.format(item['id'], future.exception()))
+                            '\nMedia with ID {0} generated an exception: {1}'.format(item['id'], future.exception()))
 
 
     def make_dst_dir(self, username):
@@ -318,7 +321,7 @@ class VkScraper(object):
                 if item['owner_id'] == user_id:
                     yield item
                     if 'platform' not in item:
-                        r = requests.get(item['player'])
+                        r = self.vk_session.http.get(item['player'])
                         link = re.findall(r'https://cs.*?mp4', r.text)
                         if link:
                             yield {'date': item['date'], 'link': link[0]}
@@ -334,6 +337,48 @@ class VkScraper(object):
         iter = 0
         for item in tqdm.tqdm(self.videos_gen(username), desc='Searching {0} for videos'.format(username),
                               unit=' videos', disable=self.quiet):
+            if self.is_new_media(item):
+                future = executor.submit(self.download, item, dst)
+                future_to_item[future] = item
+
+            iter += 1
+            if self.maximum != 0 and iter >= self.maximum:
+                break
+
+    def stories_gen(self, user_id):
+        """Generator of user's stories"""
+        try:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:57.0) Gecko/20100101 Firefox/57.0'
+            }
+            r = self.vk_session.http.get('https://vk.com/id{0}'.format(user_id), headers=headers)
+            story = re.findall(r'story\d+_\d+', r.text)
+            if story:
+                r = 1
+                if 'storybrute' in self.media_types:
+                    r = 1000
+
+                parts = story[0].split('_')
+                for i in range(0, r):
+                    r = self.vk_session.http.get(
+                        'https://m.vk.com/{0}_{1}'.format(parts[0], int(parts[1]) - i))
+                    error = re.findall(r'service_msg_error', r.text)
+                    if not error:
+                        link = re.findall(r'https://story.*.jpg', r.text)
+                        print(link)
+                        if link:
+                            yield {'id': story[0], 'date': time.time(), 'link': link[0]}
+        except ValueError:
+            self.logger.exception('Failed to get stories for ' + user_id)
+
+    def get_stories(self, dst, executor, future_to_item, username):
+        """Scrapes the user's stories"""
+        if 'story' and 'storybrute' not in self.media_types:
+            return
+
+        iter = 0
+        for item in tqdm.tqdm(self.stories_gen(username), desc='Searching {0} for stories'.format(username),
+                              unit=' stories', disable=self.quiet):
             if self.is_new_media(item):
                 future = executor.submit(self.download, item, dst)
                 future_to_item[future] = item
@@ -368,7 +413,8 @@ def main():
     parser.add_argument('--maximum', '-m', type=int, default=0, help='Maximum number of items to scrape')
     parser.add_argument('--retain-username', '--retain_username', '-n', action='store_true', default=False,
                         help='Creates username subdirectory when destination flag is set')
-    parser.add_argument('--media-types', '--media_types', '-t', nargs='+', default=['image', 'video'],
+    parser.add_argument('--media-types', '--media_types', '-t', nargs='+',
+                        default=['image', 'video'],
                         help='Specify media types to scrape')
     parser.add_argument('--latest', action='store_true', default=False, help='Scrape new media since the last scrape')
     parser.add_argument('--verbose', '-v', type=int, default=0, help='Logging verbosity level')

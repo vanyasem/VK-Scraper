@@ -14,7 +14,7 @@ Features
 - Scrape user's photos
 - Scrape user's uploaded VK videos
 - Scrape user's external videos thumbnails
-- Scrape user's stories
+- Scrape user's stories (`story` scrapes just the last one, `storybrute` bruteforces stories really fast)
 
 Install
 -------
@@ -69,7 +69,7 @@ Arguments
 --retain-username -n  Creates a username subdirectory when the destination flag is set
 
 --media-types -t      Specify media types to scrape. Enter as space separated values.
-                      Valid values are image, video, or none
+                      Valid values are image, video, story, storybrute or none
 
 --latest              Scrape only new media since the last scrape. Uses the last modified
                       time of the latest media item in the destination directory to compare
@@ -100,6 +100,5 @@ Futurelog
 - Add unit-tests
 - Scrape by hashtag
 - Scrape by location
-- ~~Scrape stories~~ Stories API is private. I managed to parse only the last published story
 - Save metadata to a file (likes, comments, etc)
 - Sort photos by their albums
