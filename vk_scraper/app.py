@@ -61,7 +61,7 @@ class VkScraper(object):
                 self.__dict__[key] = kwargs.get(key)
 
         # Set up a logger
-        self.logger = VkScraper.get_logger(level=logging.DEBUG, verbose=default_attr.get('verbose'))
+        self.logger = VkScraper.get_logger(level=logging.DEBUG,
 
         self.session = requests.Session()
 
@@ -155,7 +155,10 @@ class VkScraper(object):
             dst = self.make_dst_dir(username)
 
             # Get the user metadata.
-            user_id = self.check_user(username)
+            try:
+                user_id = self.check_user(username)
+            except:
+                print('Error getting user details for {0}\n'.format(username))
 
             if user_id:
                 self.get_photos(dst, executor, future_to_item, user_id)
@@ -164,8 +167,8 @@ class VkScraper(object):
             # Displays the progress bar of completed downloads. Might not even pop up if all media is downloaded while
             # the above loop finishes.
             if future_to_item:
-                for future in tqdm.tqdm(concurrent.futures.as_completed(future_to_item), total=len(future_to_item),
-                                        desc='Downloading', disable=self.quiet):
+                for future in tqdm.tqdm(concurrent.futures.as_completed(future_to_item),
+                                        total=len(future_to_item), desc='Downloading', disable=self.quiet):
                     item = future_to_item[future]
 
                     if future.exception() is not None:
