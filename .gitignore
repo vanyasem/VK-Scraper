@@ -123,6 +123,5 @@ $RECYCLE.BIN/
 ## File-based project format:
 *.iws
 
-vk_config\.json
-
+vk_scraper/vk_config*.json
 *.log

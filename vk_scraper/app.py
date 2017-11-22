@@ -130,7 +130,7 @@ class VkScraper(object):
             with open(usernames_file) as user_file:
                 for line in user_file.readlines():
                     # Find all usernames delimited by ,; or whitespace
-                    users += re.findall(r'[^,;\s]+', line)
+                    users += re.findall(r'[^,;\s]+', line.split("#")[0])
         except IOError as err:
             raise ValueError('File not found ' + err)
         return users
@@ -258,7 +258,7 @@ class VkScraper(object):
                 return 'photo_130'
             elif 'photo_75' in item:
                 return 'photo_75'
-        else:
+        elif 'link' in item:
             return 'link'
 
     def download(self, item, save_dir='./'):

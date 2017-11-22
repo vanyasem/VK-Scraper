@@ -14,6 +14,8 @@ Features
 - Scrape user's photos
 - Scrape user's uploaded VK videos
 - Scrape user's external videos thumbnails
+- Scrape user's stories
+
 Install
 -------
 To install or update vk-scraper:
@@ -95,8 +97,9 @@ Contributing
 
 Futurelog
 ---------
+- Add unit-tests
 - Scrape by hashtag
 - Scrape by location
-- ~~Scrape stories~~ Stories API is private. The only way to get them would be to parse vk.com.
+- ~~Scrape stories~~ Stories API is private. I managed to parse only the last published story
 - Save metadata to a file (likes, comments, etc)
 - Sort photos by their albums
