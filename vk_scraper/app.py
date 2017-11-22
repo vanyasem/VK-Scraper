@@ -364,7 +364,7 @@ class VkScraper(object):
                         'https://m.vk.com/{0}_{1}'.format(parts[0], int(parts[1]) - i))
                     error = re.findall(r'service_msg_error', r.text)
                     if not error:
-                        link = re.findall(r'https://story.*.jpg', r.text)
+                        link = re.findall(r'(?<!poster=")https://story.*(?:jpg|mp4)', r.text)
                         print(link)
                         if link:
                             yield {'id': story[0], 'date': time.time(), 'link': link[0]}
