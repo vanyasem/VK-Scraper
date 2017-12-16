@@ -31,10 +31,10 @@ if sys.version_info < (3, 2):
 
 setup(
     name='VK-Scraper',
-    version='1.2.0',
+    version='1.3.0',
     description='',
     url='https://github.com/vanyasem/VK-Scraper',
-    download_url='https://github.com/vanyasem/VK-Scraper/archive/v1.2.0.tar.gz',
+    download_url='https://github.com/vanyasem/VK-Scraper/archive/v1.3.0.tar.gz',
     author='Ivan Semkin',
     author_email='ivan@semkin.ru',
     license='GPL-3.0',
