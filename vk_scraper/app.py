@@ -365,7 +365,6 @@ class VkScraper(object):
                     error = re.findall(r'service_msg_error', r.text)
                     if not error:
                         link = re.findall(r'(?<!poster=")https://story.*(?:jpg|mp4)', r.text)
-                        print(link)
                         if link:
                             yield {'id': story[0], 'date': time.time(), 'link': link[0]}
         except ValueError:
