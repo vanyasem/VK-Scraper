@@ -18,10 +18,24 @@ Features
 
 Install
 -------
-To install or update vk-scraper:
-```bash
-pip install vk-scraper --upgrade
-```
+
+#### Arch GNU/Linux
+For the stable version:
+
+    $ pacaur -S vk-scraper
+
+For the git version:
+
+    $ pacaur -S vk-scraper-git
+
+#### Other distros
+For the stable version:
+
+    $ pip3 install vk-scraper --upgrade --user
+
+For the git version:
+
+    $ pip3 install git+https://github.com/vanyasem/VK-Scraper.git --upgrade --user
 
 Usage
 -----
