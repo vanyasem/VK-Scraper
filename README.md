@@ -13,8 +13,9 @@ Features
 --------
 - Scrape user's photos
 - Scrape user's uploaded VK videos
+- Scrape user's saved photos
 - Scrape user's external videos thumbnails
-- Scrape user's stories (`story` scrapes just the last one, `storybrute` bruteforces stories really fast)
+- Scrape user's stories (`story` scrapes just the last one, `storybrute` also tries to bruteforce IDs of older stories)
 
 Install
 -------
@@ -22,11 +23,11 @@ Install
 #### Arch GNU/Linux
 For the stable version:
 
-    $ pacaur -S vk-scraper
+    $ trizen -S vk-scraper
 
 For the git version:
 
-    $ pacaur -S vk-scraper-git
+    $ trizen -S vk-scraper-git
 
 #### Other distros
 For the stable version:
@@ -83,7 +84,8 @@ Arguments
 --retain-username -n  Creates a username subdirectory when the destination flag is set
 
 --media-types -t      Specify media types to scrape. Enter as space separated values.
-                      Valid values are image, video, story, storybrute or none
+                      Valid values are image, saved, video, story, storybrute or none
+                      (defaults to image and video)
 
 --latest              Scrape only new media since the last scrape. Uses the last modified
                       time of the latest media item in the destination directory to compare

@@ -42,7 +42,7 @@ except NameError:
 
 
 class VkScraper(object):
-    """VkScraper scrapes and downloads an VK user's photos, videos, and stories"""
+    """VkScraper scrapes and downloads an VK user's photos, saved pictures, videos, and stories"""
     def __init__(self, **kwargs):
         default_attr = dict(username='', usernames=[], filename=None,
                             login_user=None, login_pass=None,
@@ -164,6 +164,7 @@ class VkScraper(object):
 
             if user_id:
                 self.get_photos(dst, executor, future_to_item, user_id)
+                self.get_saved(dst, executor, future_to_item, user_id)
                 self.get_videos(dst, executor, future_to_item, user_id)
                 self.get_stories(dst, executor, future_to_item, user_id)
 
@@ -304,6 +305,32 @@ class VkScraper(object):
         iter = 0
         for item in tqdm.tqdm(self.photos_gen(username), desc='Searching {0} for photos'.format(username),
                               unit=' photos', disable=self.quiet):
+            if self.is_new_media(item):
+                future = executor.submit(self.download, item, dst)
+                future_to_item[future] = item
+
+            iter += 1
+            if self.maximum != 0 and iter >= self.maximum:
+                break
+
+    def saved_gen(self, user_id):
+        """Generator of all user's saved pictures"""
+        try:
+            photos = self.tools.get_all('photos.get', 200, {'owner_id': user_id, 'album_id': 'saved'})
+
+            for item in photos['items']:
+                yield item
+        except ValueError:
+            self.logger.exception('Failed to get saved pictures for ' + user_id)
+
+    def get_saved(self, dst, executor, future_to_item, username):
+        """Scrapes the user's saved pictures for photos"""
+        if 'saved' not in self.media_types:
+            return
+
+        iter = 0
+        for item in tqdm.tqdm(self.saved_gen(username), desc='Searching {0} for saved pictures'.format(username),
+                              unit=' pictures', disable=self.quiet):
             if self.is_new_media(item):
                 future = executor.submit(self.download, item, dst)
                 future_to_item[future] = item
