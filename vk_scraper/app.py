@@ -90,7 +90,7 @@ class VkScraper(object):
             auth_handler=self.two_factor_handler,
             captcha_handler=self.captcha_handler,
             app_id=6036185,
-            api_version='5.76',
+            api_version='5.77',
         )
 
         try:
@@ -258,32 +258,35 @@ class VkScraper(object):
     def determine_max_media_res(item):
         if 'duration' in item:
             if 'photo_800' in item:
-                return 'photo_800'
+                return item['photo_800']
             elif 'photo_640' in item:
-                return 'photo_640'
+                return item['photo_640']
             elif 'photo_320' in item:
-                return 'photo_320'
+                return item['photo_320']
             elif 'photo_130' in item:
-                return 'photo_130'
-        elif 'text' in item:
-            if 'photo_2560' in item:
-                return 'photo_2560'
-            elif 'photo_1280' in item:
-                return 'photo_1280'
-            elif 'photo_807' in item:
-                return 'photo_807'
-            elif 'photo_604' in item:
-                return 'photo_604'
-            elif 'photo_130' in item:
-                return 'photo_130'
-            elif 'photo_75' in item:
-                return 'photo_75'
+                return item['photo_130']
+        if 'text' in item:
+            sizes = []
+            for size in item['sizes']:
+                sizes.append(size['type'])
+            if 'w' in sizes:
+                return item['sizes'][sizes.index('w')]['url']
+            elif 'z' in item:
+                return item['sizes'][sizes.index('z')]['url']
+            elif 'y' in item:
+                return item['sizes'][sizes.index('y')]['url']
+            elif 'x' in item:
+                return item['sizes'][sizes.index('x')]['url']
+            elif 'm' in item:
+                return item['sizes'][sizes.index('m')]['url']
+            elif 's' in item:
+                return item['sizes'][sizes.index('s')]['url']
         elif 'link' in item:
-            return 'link'
+            return item['link']
 
     def download(self, item, save_dir='./'):
         """Downloads the media file"""
-        url = item[self.determine_max_media_res(item)]
+        url = self.determine_max_media_res(item)
         base_name = url.split('/')[-1]
         file_path = os.path.join(save_dir, base_name)
 

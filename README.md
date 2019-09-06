@@ -117,3 +117,4 @@ Futurelog
 - Scrape by location
 - Save metadata to a file (likes, comments, etc)
 - Sort photos by their albums
+- Support downloading external videos by using youtube-dl
