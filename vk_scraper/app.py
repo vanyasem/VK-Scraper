@@ -314,15 +314,15 @@ class VkScraper(object):
         if 'image' not in self.media_types:
             return
 
-        iter = 0
+        iterator = 0
         for item in tqdm.tqdm(self.photos_gen(username), desc='Searching {0} for photos'.format(username),
                               unit=' photos', disable=self.quiet):
             if self.is_new_media(item):
                 future = executor.submit(self.download, item, dst)
                 future_to_item[future] = item
 
-            iter += 1
-            if self.maximum != 0 and iter >= self.maximum:
+            iterator += 1
+            if self.maximum != 0 and iterator >= self.maximum:
                 break
 
     def saved_gen(self, user_id):
@@ -340,15 +340,15 @@ class VkScraper(object):
         if 'saved' not in self.media_types:
             return
 
-        iter = 0
+        iterator = 0
         for item in tqdm.tqdm(self.saved_gen(username), desc='Searching {0} for saved pictures'.format(username),
                               unit=' pictures', disable=self.quiet):
             if self.is_new_media(item):
                 future = executor.submit(self.download, item, dst)
                 future_to_item[future] = item
 
-            iter += 1
-            if self.maximum != 0 and iter >= self.maximum:
+            iterator += 1
+            if self.maximum != 0 and iterator >= self.maximum:
                 break
 
     def videos_gen(self, user_id):
@@ -373,15 +373,15 @@ class VkScraper(object):
         if 'video' not in self.media_types:
             return
 
-        iter = 0
+        iterator = 0
         for item in tqdm.tqdm(self.videos_gen(username), desc='Searching {0} for videos'.format(username),
                               unit=' videos', disable=self.quiet):
             if self.is_new_media(item):
                 future = executor.submit(self.download, item, dst)
                 future_to_item[future] = item
 
-            iter += 1
-            if self.maximum != 0 and iter >= self.maximum:
+            iterator += 1
+            if self.maximum != 0 and iterator >= self.maximum:
                 break
 
     def stories_gen(self, user_id):
@@ -414,15 +414,15 @@ class VkScraper(object):
         if 'story' and 'storybrute' not in self.media_types:
             return
 
-        iter = 0
+        iterator = 0
         for item in tqdm.tqdm(self.stories_gen(username), desc='Searching {0} for stories'.format(username),
                               unit=' stories', disable=self.quiet):
             if self.is_new_media(item):
                 future = executor.submit(self.download, item, dst)
                 future_to_item[future] = item
 
-            iter += 1
-            if self.maximum != 0 and iter >= self.maximum:
+            iterator += 1
+            if self.maximum != 0 and iterator >= self.maximum:
                 break
 
 
