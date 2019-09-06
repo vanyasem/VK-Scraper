@@ -1,6 +1,6 @@
 VK Scraper
 =================
-![Python 2.6, 2.7, 3.4, 3.5, 3.6](https://img.shields.io/badge/python-2.6%2C%202.7%2C%203.4%2C%203.5%2C%203.6-blue.svg)
+![Python 2.7, 3.4, 3.5, 3.6, 3.7](https://img.shields.io/badge/python-2.7%2C%203.4%2C%203.5%2C%203.6%2C%203.7-blue.svg)
 [![GitHub License](https://img.shields.io/badge/license-GPLv3-blue.svg)](https://raw.githubusercontent.com/vanyasem/VK-Scraper/master/LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/vk-scraper.svg)](https://pypi.python.org/pypi/VK-Scraper)
 [![AUR](https://repology.org/badge/version-for-repo/aur/vk-scraper.svg)](https://aur.archlinux.org/packages/vk-scraper)
@@ -114,7 +114,6 @@ Contributing
 
 Futurelog
 ---------
-- Add unit-tests
 - Scrape by hashtag
 - Scrape by location
 - Save metadata to a file (likes, comments, etc)

@@ -60,6 +60,5 @@ setup(
             'vk-scraper=vk_scraper.app:main',
         ],
     },
-    test_suite='nose.collector',
     keywords=['vk', 'vkontakte', 'scraper', 'download', 'media', 'photos', 'videos', 'stories']
 )
