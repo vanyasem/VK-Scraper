@@ -43,7 +43,18 @@ except NameError:
 
 class VkScraper(object):
     """VkScraper scrapes and downloads an VK user's photos, saved pictures, videos, and stories"""
+
     def __init__(self, **kwargs):
+        self.maximum = None
+        self.media_types = None
+        self.latest = None
+        self.retain_username = None
+        self.destination = None
+        self.quiet = None
+        self.usernames = None
+        self.login_pass = None
+        self.login_user = None
+
         default_attr = dict(username='', usernames=[], filename=None,
                             login_user=None, login_pass=None,
                             destination='./', retain_username=False,
@@ -161,6 +172,7 @@ class VkScraper(object):
                 user_id = self.check_user(username)
             except:
                 print('Error getting user details for {0}'.format(username))
+                continue
 
             if user_id:
                 self.get_photos(dst, executor, future_to_item, user_id)
@@ -261,7 +273,7 @@ class VkScraper(object):
                 return 'photo_807'
             elif 'photo_604' in item:
                 return 'photo_604'
-            elif'photo_130' in item:
+            elif 'photo_130' in item:
                 return 'photo_130'
             elif 'photo_75' in item:
                 return 'photo_75'
