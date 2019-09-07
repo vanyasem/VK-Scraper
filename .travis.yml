@@ -7,6 +7,8 @@ python:
 script: echo NoTests
 install: python setup.py develop
 deploy:
+  skip_cleanup: true
+  skip_existing: true
   provider: pypi
   user: vanyasem
   password:
