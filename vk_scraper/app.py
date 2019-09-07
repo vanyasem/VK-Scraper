@@ -33,6 +33,7 @@ import time
 import requests
 import tqdm
 import vk_api
+import youtube_dl
 
 try:
     reload(sys)  # Python 2.7
@@ -60,7 +61,7 @@ class VkScraper(object):
                             destination='./', retain_username=False,
                             quiet=False, maximum=0,
                             latest=False,
-                            media_types=['image', 'video'],
+                            media_types=['image'],
                             verbose=0,
                             )
 
@@ -90,7 +91,7 @@ class VkScraper(object):
             auth_handler=self.two_factor_handler,
             captcha_handler=self.captcha_handler,
             app_id=6036185,
-            api_version='5.77',
+            api_version='5.101',
         )
 
         try:
@@ -221,8 +222,8 @@ class VkScraper(object):
         list_of_files = []
         file_types = ('*.jpg', '*.mp4')
 
-        for type in file_types:
-            list_of_files.extend(glob.glob(dst + '/' + type))
+        for file_type in file_types:
+            list_of_files.extend(glob.glob(dst + '/' + file_type))
 
         if list_of_files:
             latest_file = max(list_of_files, key=os.path.getmtime)
@@ -232,22 +233,20 @@ class VkScraper(object):
         """Checks whether a user or community exists"""
         try:
             response = self.vk.users.get(user_ids=username)
-
             if response:
                 try:
                     return response[0]['id']
                 except:
                     raise ValueError('User {0} does not exist'.format(username))
         except vk_api.exceptions.ApiError:
-            response = self.vk.groups.getById(group_id=username)
-
+            response = self.vk.groups.getById(group_id=-int(username))
             if response:
                 try:
                     return -response[0]['id']
                 except:
-                    raise ValueError('User {0} does not exist'.format(username))
+                    raise ValueError('Community {0} does not exist'.format(username))
             else:
-                raise ValueError('User {0} does not exist'.format(username))
+                raise ValueError('Community {0} does not exist'.format(username))
 
     def is_new_media(self, item):
         """Returns True if the media is new"""
@@ -255,39 +254,70 @@ class VkScraper(object):
             ('date' not in item) or item.get('date') > self.last_scraped_file_time
 
     @staticmethod
-    def determine_max_media_res(item):
-        if 'duration' in item:
-            if 'photo_800' in item:
-                return item['photo_800']
-            elif 'photo_640' in item:
-                return item['photo_640']
-            elif 'photo_320' in item:
-                return item['photo_320']
-            elif 'photo_130' in item:
-                return item['photo_130']
-        if 'text' in item:
-            sizes = []
-            for size in item['sizes']:
-                sizes.append(size['type'])
-            if 'w' in sizes:
-                return item['sizes'][sizes.index('w')]['url']
-            elif 'z' in item:
-                return item['sizes'][sizes.index('z')]['url']
-            elif 'y' in item:
-                return item['sizes'][sizes.index('y')]['url']
-            elif 'x' in item:
-                return item['sizes'][sizes.index('x')]['url']
-            elif 'm' in item:
-                return item['sizes'][sizes.index('m')]['url']
-            elif 's' in item:
-                return item['sizes'][sizes.index('s')]['url']
-        elif 'link' in item:
-            return item['link']
+    def determine_max_media_res(item, save_dir):
+        if 'duration' in item:  # Video
+            return VkScraper.determine_max_video_res(item, save_dir)
+        elif 'video' in item and 'duration' in item['video']:  # Video story
+            return VkScraper.determine_max_video_res(item['video'], save_dir)
+        elif 'sizes' in item:  # Photo
+            return VkScraper.determine_max_photo_res(item)
+        elif 'photo' in item and 'sizes' in item['photo']:  # Photo story
+            return VkScraper.determine_max_photo_res(item['photo'])
+
+    class VideoLogger(object):
+        def debug(self, msg):
+            pass
+
+        def warning(self, msg):
+            pass
+
+        def error(self, msg):
+            print('\n' + msg)
+
+    @staticmethod
+    def determine_max_video_res(item, save_dir):
+        if 'files' in item:
+            if 'mp4_1080' in item['files']:
+                return item['files']['mp4_1080']
+            if 'mp4_720' in item['files']:
+                return item['files']['mp4_720']
+            if 'mp4_480' in item['files']:
+                return item['files']['mp4_480']
+            if 'mp4_360' in item['files']:
+                return item['files']['mp4_360']
+            if 'mp4_240' in item['files']:
+                return item['files']['mp4_240']
+        elif 'player' in item:  # TODO: parse VK videos here to download user-owned private files
+            ydl_opts = {
+                'outtmpl': save_dir + '/%(title)s.%(ext)s',
+                'noplaylist': True,
+                'logger': VkScraper.VideoLogger(),
+            }
+            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([item['player']])
+
+    @staticmethod
+    def determine_max_photo_res(item):
+        sizes = []
+        for size in item['sizes']:
+            sizes.append(size['type'])
+        if 'w' in sizes:
+            return item['sizes'][sizes.index('w')]['url']
+        elif 'z' in item:
+            return item['sizes'][sizes.index('z')]['url']
+        elif 'y' in item:
+            return item['sizes'][sizes.index('y')]['url']
+        elif 'x' in item:
+            return item['sizes'][sizes.index('x')]['url']
+        elif 'm' in item:
+            return item['sizes'][sizes.index('m')]['url']
+        elif 's' in item:
+            return item['sizes'][sizes.index('s')]['url']
 
     def download(self, item, save_dir='./'):
         """Downloads the media file"""
-        url = self.determine_max_media_res(item)
-        base_name = url.split('/')[-1]
+        url = self.determine_max_media_res(item, save_dir)
+        base_name = url.split('/')[-1].split('?')[0]
         file_path = os.path.join(save_dir, base_name)
 
         if not os.path.isfile(file_path):
@@ -363,11 +393,6 @@ class VkScraper(object):
             for item in videos['items']:
                 if item['owner_id'] == user_id:
                     yield item
-                    if 'platform' not in item:
-                        r = self.vk_session.http.get(item['player'])
-                        link = re.findall(r'https://cs.*?mp4', r.text)
-                        if link:
-                            yield {'date': item['date'], 'link': link[0]}
 
         except ValueError:
             self.logger.exception('Failed to get videos for ' + user_id)
@@ -391,31 +416,16 @@ class VkScraper(object):
     def stories_gen(self, user_id):
         """Generator of user's stories"""
         try:
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:57.0) Gecko/20100101 Firefox/57.0'
-            }
-            r = self.vk_session.http.get('https://vk.com/id{0}'.format(user_id), headers=headers)
-            story = re.findall(r'story\d+_\d+', r.text)
-            if story:
-                r = 1
-                if 'storybrute' in self.media_types:
-                    r = 1000
+            stories = self.tools.get_all('stories.get', 200, {'owner_id': user_id})
 
-                parts = story[0].split('_')
-                for i in range(0, r):
-                    r = self.vk_session.http.get(
-                        'https://m.vk.com/{0}_{1}'.format(parts[0], int(parts[1]) - i))
-                    error = re.findall(r'service_msg_error', r.text)
-                    if not error:
-                        link = re.findall(r'(?<!poster=")https://story.*(?:jpg|mp4)', r.text)
-                        if link:
-                            yield {'id': story[0], 'date': time.time(), 'link': link[0]}
+            for item in stories['items'][0]:
+                yield item
         except ValueError:
             self.logger.exception('Failed to get stories for ' + user_id)
 
     def get_stories(self, dst, executor, future_to_item, username):
         """Scrapes the user's stories"""
-        if 'story' and 'storybrute' not in self.media_types:
+        if 'story' not in self.media_types:
             return
 
         iterator = 0
@@ -456,7 +466,7 @@ def main():
     parser.add_argument('--retain-username', '--retain_username', '-n', action='store_true', default=False,
                         help='Creates username subdirectory when destination flag is set')
     parser.add_argument('--media-types', '--media_types', '-t', nargs='+',
-                        default=['image', 'video'],
+                        default=['image'],
                         help='Specify media types to scrape')
     parser.add_argument('--latest', action='store_true', default=False, help='Scrape new media since the last scrape')
     parser.add_argument('--verbose', '-v', type=int, default=0, help='Logging verbosity level')

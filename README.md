@@ -7,15 +7,16 @@ VK Scraper
 
 vk-scraper is a command-line application written in Python that scrapes and downloads VK user's / community's data. Use responsibly.
 
-Inspired by [instagram-scraper](https://github.com/rarcega/instagram-scraper)
+To get a closer look at how it works, read the [docs](DOCS.md).
+
+Inspired by [instagram-scraper](https://github.com/rarcega/instagram-scraper).
 
 Features
 --------
 - Scrape user's photos
-- Scrape user's uploaded VK videos
+- Scrape user's videos (both uploaded and external)
 - Scrape user's saved photos
-- Scrape user's external videos thumbnails
-- Scrape user's stories (`story` scrapes just the last one, `storybrute` also tries to bruteforce IDs of older stories)
+- Scrape user's stories
 
 Install
 -------
@@ -84,8 +85,8 @@ Arguments
 --retain-username -n  Creates a username subdirectory when the destination flag is set
 
 --media-types -t      Specify media types to scrape. Enter as space separated values.
-                      Valid values are image, saved, video, story, storybrute or none
-                      (defaults to image and video)
+                      Valid values are image, saved, video, story, or none
+                      (defaults to image)
 
 --latest              Scrape only new media since the last scrape. Uses the last modified
                       time of the latest media item in the destination directory to compare
@@ -117,4 +118,3 @@ Futurelog
 - Scrape by location
 - Save metadata to a file (likes, comments, etc)
 - Sort photos by their albums
-- Support downloading external videos by using youtube-dl
