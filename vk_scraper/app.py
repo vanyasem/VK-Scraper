@@ -303,15 +303,15 @@ class VkScraper(object):
             sizes.append(size['type'])
         if 'w' in sizes:
             return item['sizes'][sizes.index('w')]['url']
-        elif 'z' in item:
+        elif 'z' in sizes:
             return item['sizes'][sizes.index('z')]['url']
-        elif 'y' in item:
+        elif 'y' in sizes:
             return item['sizes'][sizes.index('y')]['url']
-        elif 'x' in item:
+        elif 'x' in sizes:
             return item['sizes'][sizes.index('x')]['url']
-        elif 'm' in item:
+        elif 'm' in sizes:
             return item['sizes'][sizes.index('m')]['url']
-        elif 's' in item:
+        elif 's' in sizes:
             return item['sizes'][sizes.index('s')]['url']
 
     def download(self, item, save_dir='./'):
