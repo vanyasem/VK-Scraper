@@ -1,6 +1,6 @@
 VK Scraper
 =================
-![Python 2.7, 3.4, 3.5, 3.6, 3.7](https://img.shields.io/pypi/pyversions/vk_scraper.svg)
+![Python 2.7, 3.5, 3.6, 3.7](https://img.shields.io/pypi/pyversions/vk_scraper.svg)
 [![PyPI](https://img.shields.io/pypi/v/vk-scraper.svg)](https://pypi.python.org/pypi/VK-Scraper)
 [![AUR](https://repology.org/badge/version-for-repo/aur/vk-scraper.svg)](https://aur.archlinux.org/packages/vk-scraper)
 [![Travis](https://img.shields.io/travis/vanyasem/VK-Scraper.svg)](https://travis-ci.org/vanyasem/VK-Scraper)
