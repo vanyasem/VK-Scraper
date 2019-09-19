@@ -20,6 +20,11 @@
 
 from setuptools import setup, find_packages
 
+from os import path
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
+
 requires = [
     'vk_api',
     'requests>=1.0.4',
@@ -29,10 +34,12 @@ requires = [
 
 setup(
     name='VK-Scraper',
-    version='2.0.2',
-    description='',
+    version='2.0.3',
+    description="Scrapes VK user's photos",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://github.com/vanyasem/VK-Scraper',
-    download_url='https://github.com/vanyasem/VK-Scraper/archive/v2.0.2.tar.gz',
+    download_url='https://github.com/vanyasem/VK-Scraper/archive/v2.0.3.tar.gz',
     author='Ivan Semkin',
     author_email='ivan@semkin.ru',
     license='GPL-3.0',
