@@ -35,12 +35,6 @@ import tqdm
 import vk_api
 import youtube_dl
 
-try:
-    reload(sys)  # Python 2.7
-    sys.setdefaultencoding("UTF8")
-except NameError:
-    pass
-
 
 class VkScraper(object):
     """VkScraper scrapes and downloads an VK user's photos, saved pictures, videos, and stories"""

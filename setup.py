@@ -18,7 +18,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-import sys
 from setuptools import setup, find_packages
 
 requires = [
@@ -27,9 +26,6 @@ requires = [
     'tqdm>=3.8.0',
     'youtube_dl',
 ]
-
-if sys.version_info < (3, 2):
-    requires.append('futures==2.2')
 
 setup(
     name='VK-Scraper',
@@ -47,8 +43,6 @@ setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
