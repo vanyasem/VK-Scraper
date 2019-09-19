@@ -96,15 +96,6 @@ Arguments
 --maximum     -m      Maximum number of items to scrape
 ```
 
-Develop
--------
-Clone the repo and create a virtualenv
-```bash
-virtualenv env
-source env/bin/activate
-python setup.py install
-```
-
 Contributing
 ------------
 1. Check open issues or open a new one to start a discussion around
