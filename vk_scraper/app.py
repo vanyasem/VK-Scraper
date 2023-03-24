@@ -84,7 +84,6 @@ class VkScraper(object):
             self.login_user, self.login_pass,
             auth_handler=self.two_factor_handler,
             captcha_handler=self.captcha_handler,
-            app_id=6036185,
             api_version='5.101',
         )
 
