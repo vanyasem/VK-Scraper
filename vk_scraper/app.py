@@ -330,20 +330,26 @@ class VkScraper(object):
             file_time = item.get('date', time.time())
             os.utime(file_path, (file_time, file_time))
 
-    def photos_gen(self, user_id, album_id):
-        """Generator of all user's photos"""
+    def media_gen(self, user_id, method, params):
+        """Generator of user's media"""
+
         try:
-            params = {'owner_id': user_id}
+            items = self.tools.get_all(method, 200, params)
 
-            if album_id is not None:
-                params.update({'album_id': album_id})
-
-            photos = self.tools.get_all('photos.getAll', 200, params)
-
-            for item in photos['items']:
+            for item in items['items']:
                 yield item
         except ValueError:
-            self.logger.exception('Failed to get photos for ' + user_id)
+            self.logger.exception('Failed to get media for ' + user_id)
+
+    def photos_gen(self, user_id, album_id):
+        """Generator of all user's photos"""
+
+        params = {'owner_id': user_id}
+
+        if album_id is not None:
+            params.update({'album_id': album_id})
+
+        return self.media_gen(user_id, 'photos.getAll' if album_id is None else 'photos.get', params)
 
     def get_photos(self, dst, executor, future_to_item, username, album_id=None):
         """Scrapes the user's albums for photos"""
@@ -365,15 +371,8 @@ class VkScraper(object):
 
     def videos_gen(self, user_id):
         """Generator of all user's videos"""
-        try:
-            videos = self.tools.get_all('video.get', 200, {'owner_id': user_id})
 
-            for item in videos['items']:
-                if item['owner_id'] == user_id:
-                    yield item
-
-        except ValueError:
-            self.logger.exception('Failed to get videos for ' + user_id)
+        return self.media_gen(user_id, 'video.get', {'owner_id': user_id})
 
     def get_videos(self, dst, executor, future_to_item, username):
         """Scrapes the user's videos"""
@@ -391,13 +390,8 @@ class VkScraper(object):
 
     def stories_gen(self, user_id):
         """Generator of user's stories"""
-        try:
-            stories = self.tools.get_all('stories.get', 200, {'owner_id': user_id})
 
-            for item in stories['items'][0]:
-                yield item
-        except ValueError:
-            self.logger.exception('Failed to get stories for ' + user_id)
+        return self.media_gen(user_id, 'stories.get', {'owner_id': user_id})
 
     def get_stories(self, dst, executor, future_to_item, username):
         """Scrapes the user's stories"""
