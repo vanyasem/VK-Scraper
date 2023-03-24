@@ -75,7 +75,6 @@ class VkScraper(object):
         self.logged_in = False
         self.vk = None
         self.vk_session = None
-        self.tools = None
         self.last_scraped_file_time = 0
 
     def login(self):
@@ -96,7 +95,6 @@ class VkScraper(object):
             return
 
         self.vk = self.vk_session.get_api()
-        self.tools = vk_api.VkTools(self.vk_session)
 
     @staticmethod
     def two_factor_handler():
@@ -334,10 +332,26 @@ class VkScraper(object):
         """Generator of user's media"""
 
         try:
-            items = self.tools.get_all(method, 200, params)
+            """The API doesn't allow getting more than 200 items at once"""
+            step_size = 200
+            maximum = sys.maxsize if self.maximum == 0 else self.maximum
 
-            for item in items['items']:
-                yield item
+            for offset in range(0, maximum, step_size):
+                is_last_iteration = offset + step_size > maximum
+
+                params.update({'offset': offset, 'count': self.maximum if is_last_iteration else step_size})
+
+                items = self.vk_session.method(method, params)
+
+                is_last_iteration = is_last_iteration or not len(items['items'])
+
+                for item in items['items']:
+                    yield item
+
+                if is_last_iteration:
+                    break
+
+            yield from ()
         except ValueError:
             self.logger.exception('Failed to get media for ' + user_id)
 
@@ -359,15 +373,10 @@ class VkScraper(object):
         else:
             desc = 'Searching {0} album {1} for photos'.format(username, album_id)
 
-        iterator = 0
         for item in tqdm.tqdm(self.photos_gen(username, album_id), desc=desc, unit=' photos', disable=self.quiet):
             if self.is_new_media(item):
                 future = executor.submit(self.download, item, dst)
                 future_to_item[future] = item
-
-            iterator += 1
-            if self.maximum != 0 and iterator >= self.maximum:
-                break
 
     def videos_gen(self, user_id):
         """Generator of all user's videos"""
@@ -377,16 +386,11 @@ class VkScraper(object):
     def get_videos(self, dst, executor, future_to_item, username):
         """Scrapes the user's videos"""
 
-        iterator = 0
         for item in tqdm.tqdm(self.videos_gen(username), desc='Searching {0} for videos'.format(username),
                               unit=' videos', disable=self.quiet):
             if self.is_new_media(item):
                 future = executor.submit(self.download, item, dst)
                 future_to_item[future] = item
-
-            iterator += 1
-            if self.maximum != 0 and iterator >= self.maximum:
-                break
 
     def stories_gen(self, user_id):
         """Generator of user's stories"""
@@ -396,17 +400,11 @@ class VkScraper(object):
     def get_stories(self, dst, executor, future_to_item, username):
         """Scrapes the user's stories"""
 
-        iterator = 0
         for item in tqdm.tqdm(self.stories_gen(username), desc='Searching {0} for stories'.format(username),
                               unit=' stories', disable=self.quiet):
             if self.is_new_media(item):
                 future = executor.submit(self.download, item, dst)
                 future_to_item[future] = item
-
-            iterator += 1
-            if self.maximum != 0 and iterator >= self.maximum:
-                break
-
 
 def main():
     parser = argparse.ArgumentParser(
