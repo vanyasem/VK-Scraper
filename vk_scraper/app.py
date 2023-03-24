@@ -387,7 +387,9 @@ class VkScraper(object):
     def videos_gen(self, user_id):
         """Generator of all user's videos"""
 
-        return self.media_gen(user_id, 'video.get', {'owner_id': user_id})
+        for item in self.media_gen(user_id, 'video.get', {'owner_id': user_id}):
+            if item['owner_id'] == user_id:
+                yield item
 
     def get_videos(self, dst, executor, future_to_item, username):
         """Scrapes the user's videos"""
