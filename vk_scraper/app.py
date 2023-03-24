@@ -187,7 +187,6 @@ class VkScraper(object):
                         self.logger.warning(
                             '\nMedia with ID {0} generated an exception: {1}'.format(item['id'], future.exception()))
 
-
     def make_dst_dir(self, username):
         """Creates the destination directory."""
         if self.destination == './':
@@ -477,7 +476,6 @@ def main():
     elif args.username and args.filename:
         parser.print_help()
         raise ValueError('You must either provide username(s) OR a file containing username(s)')
-
 
     if args.filename:
         args.usernames = VkScraper.parse_file_usernames(args.filename)
