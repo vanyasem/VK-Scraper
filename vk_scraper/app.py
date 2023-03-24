@@ -174,6 +174,9 @@ class VkScraper(object):
                 if 'saved' in self.media_types:
                     self.get_photos(dst, executor, future_to_item, user_id, 'saved')
 
+                if 'wall' in self.media_types:
+                    self.get_photos(dst, executor, future_to_item, user_id, 'wall')
+
                 if 'video' in self.media_types:
                     self.get_videos(dst, executor, future_to_item, user_id)
 
