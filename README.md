@@ -94,6 +94,8 @@ Arguments
 --quiet       -q      Be quiet while scraping
 
 --maximum     -m      Maximum number of items to scrape
+
+--offset      -o      Offset from which the scrape starts. 0 is from the oldest. (Defaults to 0)
 ```
 
 Contributing

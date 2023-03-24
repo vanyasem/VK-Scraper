@@ -49,6 +49,7 @@ class VkScraper(object):
         self.usernames = None
         self.login_pass = None
         self.login_user = None
+        self.offset = None
 
         default_attr = dict(username='', usernames=[], filename=None,
                             login_user=None, login_pass=None,
@@ -57,6 +58,7 @@ class VkScraper(object):
                             latest=False,
                             media_types=['image'],
                             verbose=0,
+                            offset=0
                             )
 
         allowed_attr = list(default_attr.keys())
@@ -337,12 +339,13 @@ class VkScraper(object):
         try:
             """The API doesn't allow getting more than 200 items at once"""
             step_size = 200
-            maximum = sys.maxsize if self.maximum == 0 else self.maximum
+            maximum = sys.maxsize if self.maximum == 0 else self.maximum + self.offset
 
-            for offset in range(0, maximum, step_size):
+            for offset in range(self.offset, maximum, step_size):
                 is_last_iteration = offset + step_size > maximum
+                count = maximum - offset if is_last_iteration else step_size
 
-                params.update({'offset': offset, 'count': self.maximum if is_last_iteration else step_size})
+                params.update({'offset': offset, 'count': count})
 
                 items = self.vk_session.method(method, params)
 
@@ -439,6 +442,7 @@ def main():
                         help='Specify media types to scrape')
     parser.add_argument('--latest', action='store_true', default=False, help='Scrape new media since the last scrape')
     parser.add_argument('--verbose', '-v', type=int, default=0, help='Logging verbosity level')
+    parser.add_argument('--offset', '-o', type=int, default=0, help='Media offset')
 
     args = parser.parse_args()
 
