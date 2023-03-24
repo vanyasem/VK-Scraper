@@ -314,13 +314,13 @@ class VkScraper(object):
         file_path = os.path.join(save_dir, base_name)
 
         if not os.path.isfile(file_path):
-            with open(file_path, 'wb') as media_file:
-                try:
-                    content = self.session.get(url).content
-                except requests.exceptions.ConnectionError:
-                    time.sleep(5)
-                    content = self.session.get(url).content
+            try:
+                content = self.session.get(url).content
+            except requests.exceptions.ConnectionError:
+                time.sleep(5)
+                content = self.session.get(url).content
 
+            with open(file_path, 'wb') as media_file:
                 media_file.write(content)
 
             file_time = item.get('date', time.time())
