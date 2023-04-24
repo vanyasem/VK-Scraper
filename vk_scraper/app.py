@@ -49,6 +49,7 @@ class VkScraper(object):
         self.usernames = None
         self.login_pass = None
         self.login_user = None
+        self.offset = None
 
         default_attr = dict(username='', usernames=[], filename=None,
                             login_user=None, login_pass=None,
@@ -57,6 +58,7 @@ class VkScraper(object):
                             latest=False,
                             media_types=['image'],
                             verbose=0,
+                            offset=0
                             )
 
         allowed_attr = list(default_attr.keys())
@@ -75,7 +77,6 @@ class VkScraper(object):
         self.logged_in = False
         self.vk = None
         self.vk_session = None
-        self.tools = None
         self.last_scraped_file_time = 0
 
     def login(self):
@@ -84,7 +85,6 @@ class VkScraper(object):
             self.login_user, self.login_pass,
             auth_handler=self.two_factor_handler,
             captcha_handler=self.captcha_handler,
-            app_id=6036185,
             api_version='5.101',
         )
 
@@ -97,7 +97,6 @@ class VkScraper(object):
             return
 
         self.vk = self.vk_session.get_api()
-        self.tools = vk_api.VkTools(self.vk_session)
 
     @staticmethod
     def two_factor_handler():
@@ -171,10 +170,20 @@ class VkScraper(object):
                 continue
 
             if user_id:
-                self.get_photos(dst, executor, future_to_item, user_id)
-                self.get_saved(dst, executor, future_to_item, user_id)
-                self.get_videos(dst, executor, future_to_item, user_id)
-                self.get_stories(dst, executor, future_to_item, user_id)
+                if 'image' in self.media_types:
+                    self.get_photos(dst, executor, future_to_item, user_id)
+
+                if 'saved' in self.media_types:
+                    self.get_photos(dst, executor, future_to_item, user_id, 'saved')
+
+                if 'wall' in self.media_types:
+                    self.get_photos(dst, executor, future_to_item, user_id, 'wall')
+
+                if 'video' in self.media_types:
+                    self.get_videos(dst, executor, future_to_item, user_id)
+
+                if 'story' in self.media_types:
+                    self.get_stories(dst, executor, future_to_item, user_id)
 
             # Displays the progress bar of completed downloads. Might not even pop up if all media is downloaded while
             # the above loop finishes.
@@ -186,7 +195,6 @@ class VkScraper(object):
                     if future.exception() is not None:
                         self.logger.warning(
                             '\nMedia with ID {0} generated an exception: {1}'.format(item['id'], future.exception()))
-
 
     def make_dst_dir(self, username):
         """Creates the destination directory."""
@@ -225,22 +233,20 @@ class VkScraper(object):
 
     def check_user(self, username):
         """Checks whether a user or community exists"""
-        try:
-            response = self.vk.users.get(user_ids=username)
-            if response:
-                try:
-                    return response[0]['id']
-                except:
-                    raise ValueError('User {0} does not exist'.format(username))
-        except vk_api.exceptions.ApiError:
-            response = self.vk.groups.getById(group_id=-int(username))
+
+        response = self.vk.users.get(user_ids=username)
+        if response:
+            try:
+                return response[0]['id']
+            except:
+                raise ValueError('User {0} does not exist'.format(username))
+        else:
+            response = self.vk.groups.getById(group_id=username)
             if response:
                 try:
                     return -response[0]['id']
                 except:
                     raise ValueError('Community {0} does not exist'.format(username))
-            else:
-                raise ValueError('Community {0} does not exist'.format(username))
 
     def is_new_media(self, item):
         """Returns True if the media is new"""
@@ -315,124 +321,98 @@ class VkScraper(object):
         file_path = os.path.join(save_dir, base_name)
 
         if not os.path.isfile(file_path):
-            with open(file_path, 'wb') as media_file:
-                try:
-                    content = self.session.get(url).content
-                except requests.exceptions.ConnectionError:
-                    time.sleep(5)
-                    content = self.session.get(url).content
+            try:
+                content = self.session.get(url).content
+            except requests.exceptions.ConnectionError:
+                time.sleep(5)
+                content = self.session.get(url).content
 
+            with open(file_path, 'wb') as media_file:
                 media_file.write(content)
 
             file_time = item.get('date', time.time())
             os.utime(file_path, (file_time, file_time))
 
-    def photos_gen(self, user_id):
+    def media_gen(self, user_id, method, params):
+        """Generator of user's media"""
+
+        try:
+            """The API doesn't allow getting more than 200 items at once"""
+            step_size = 200
+            maximum = sys.maxsize if self.maximum == 0 else self.maximum + self.offset
+
+            for offset in range(self.offset, maximum, step_size):
+                is_last_iteration = offset + step_size > maximum
+                count = maximum - offset if is_last_iteration else step_size
+
+                params.update({'offset': offset, 'count': count})
+
+                items = self.vk_session.method(method, params)
+
+                is_last_iteration = is_last_iteration or not len(items['items'])
+
+                for item in items['items']:
+                    yield item
+
+                if is_last_iteration:
+                    break
+
+            yield from ()
+        except ValueError:
+            self.logger.exception('Failed to get media for ' + user_id)
+
+    def photos_gen(self, user_id, album_id):
         """Generator of all user's photos"""
-        try:
-            photos = self.tools.get_all('photos.getAll', 200, {'owner_id': user_id})
 
-            for item in photos['items']:
-                yield item
-        except ValueError:
-            self.logger.exception('Failed to get photos for ' + user_id)
+        params = {'owner_id': user_id}
 
-    def get_photos(self, dst, executor, future_to_item, username):
+        if album_id is not None:
+            params.update({'album_id': album_id})
+
+        return self.media_gen(user_id, 'photos.getAll' if album_id is None else 'photos.get', params)
+
+    def get_photos(self, dst, executor, future_to_item, username, album_id=None):
         """Scrapes the user's albums for photos"""
-        if 'image' not in self.media_types:
-            return
 
-        iterator = 0
-        for item in tqdm.tqdm(self.photos_gen(username), desc='Searching {0} for photos'.format(username),
-                              unit=' photos', disable=self.quiet):
+        if album_id is None:
+            desc = 'Searching {0} for photos'.format(username)
+        else:
+            desc = 'Searching {0} album {1} for photos'.format(username, album_id)
+
+        for item in tqdm.tqdm(self.photos_gen(username, album_id), desc=desc, unit=' photos', disable=self.quiet):
             if self.is_new_media(item):
                 future = executor.submit(self.download, item, dst)
                 future_to_item[future] = item
-
-            iterator += 1
-            if self.maximum != 0 and iterator >= self.maximum:
-                break
-
-    def saved_gen(self, user_id):
-        """Generator of all user's saved pictures"""
-        try:
-            photos = self.tools.get_all('photos.get', 200, {'owner_id': user_id, 'album_id': 'saved'})
-
-            for item in photos['items']:
-                yield item
-        except ValueError:
-            self.logger.exception('Failed to get saved pictures for ' + user_id)
-
-    def get_saved(self, dst, executor, future_to_item, username):
-        """Scrapes the user's saved pictures for photos"""
-        if 'saved' not in self.media_types:
-            return
-
-        iterator = 0
-        for item in tqdm.tqdm(self.saved_gen(username), desc='Searching {0} for saved pictures'.format(username),
-                              unit=' pictures', disable=self.quiet):
-            if self.is_new_media(item):
-                future = executor.submit(self.download, item, dst)
-                future_to_item[future] = item
-
-            iterator += 1
-            if self.maximum != 0 and iterator >= self.maximum:
-                break
 
     def videos_gen(self, user_id):
         """Generator of all user's videos"""
-        try:
-            videos = self.tools.get_all('video.get', 200, {'owner_id': user_id})
 
-            for item in videos['items']:
-                if item['owner_id'] == user_id:
-                    yield item
-
-        except ValueError:
-            self.logger.exception('Failed to get videos for ' + user_id)
+        for item in self.media_gen(user_id, 'video.get', {'owner_id': user_id}):
+            if item['owner_id'] == user_id:
+                yield item
 
     def get_videos(self, dst, executor, future_to_item, username):
         """Scrapes the user's videos"""
-        if 'video' not in self.media_types:
-            return
 
-        iterator = 0
         for item in tqdm.tqdm(self.videos_gen(username), desc='Searching {0} for videos'.format(username),
                               unit=' videos', disable=self.quiet):
             if self.is_new_media(item):
                 future = executor.submit(self.download, item, dst)
                 future_to_item[future] = item
 
-            iterator += 1
-            if self.maximum != 0 and iterator >= self.maximum:
-                break
-
     def stories_gen(self, user_id):
         """Generator of user's stories"""
-        try:
-            stories = self.tools.get_all('stories.get', 200, {'owner_id': user_id})
 
-            for item in stories['items'][0]:
-                yield item
-        except ValueError:
-            self.logger.exception('Failed to get stories for ' + user_id)
+        return self.media_gen(user_id, 'stories.get', {'owner_id': user_id})
 
     def get_stories(self, dst, executor, future_to_item, username):
         """Scrapes the user's stories"""
-        if 'story' not in self.media_types:
-            return
 
-        iterator = 0
         for item in tqdm.tqdm(self.stories_gen(username), desc='Searching {0} for stories'.format(username),
                               unit=' stories', disable=self.quiet):
             if self.is_new_media(item):
                 future = executor.submit(self.download, item, dst)
                 future_to_item[future] = item
-
-            iterator += 1
-            if self.maximum != 0 and iterator >= self.maximum:
-                break
-
 
 def main():
     parser = argparse.ArgumentParser(
@@ -464,6 +444,7 @@ def main():
                         help='Specify media types to scrape')
     parser.add_argument('--latest', action='store_true', default=False, help='Scrape new media since the last scrape')
     parser.add_argument('--verbose', '-v', type=int, default=0, help='Logging verbosity level')
+    parser.add_argument('--offset', '-o', type=int, default=0, help='Media offset')
 
     args = parser.parse_args()
 
@@ -477,7 +458,6 @@ def main():
     elif args.username and args.filename:
         parser.print_help()
         raise ValueError('You must either provide username(s) OR a file containing username(s)')
-
 
     if args.filename:
         args.usernames = VkScraper.parse_file_usernames(args.filename)

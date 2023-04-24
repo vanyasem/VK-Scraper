@@ -85,7 +85,7 @@ Arguments
 --retain-username -n  Creates a username subdirectory when the destination flag is set
 
 --media-types -t      Specify media types to scrape. Enter as space separated values.
-                      Valid values are image, saved, video, story, or none
+                      Valid values are image, saved, video, story, wall or none
                       (defaults to image)
 
 --latest              Scrape only new media since the last scrape. Uses the last modified
@@ -94,6 +94,8 @@ Arguments
 --quiet       -q      Be quiet while scraping
 
 --maximum     -m      Maximum number of items to scrape
+
+--offset      -o      Offset from which the scrape starts. 0 is from the oldest. (Defaults to 0)
 ```
 
 Contributing
