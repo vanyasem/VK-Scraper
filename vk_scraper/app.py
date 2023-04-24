@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##
-# Copyright (c) 2017-2020 Ivan Semkin.
+# Copyright (c) 2017-2023 Ivan Semkin.
 #
 # This file is part of VK-Scraper
 # (see https://github.com/vanyasem/VK-Scraper).
