@@ -50,6 +50,7 @@ class VkScraper(object):
         self.login_pass = None
         self.login_user = None
         self.offset = None
+        self.app_id = None
 
         default_attr = dict(username='', usernames=[], filename=None,
                             login_user=None, login_pass=None,
@@ -58,7 +59,8 @@ class VkScraper(object):
                             latest=False,
                             media_types=['image'],
                             verbose=0,
-                            offset=0
+                            offset=0,
+                            app_id=0
                             )
 
         allowed_attr = list(default_attr.keys())
@@ -85,6 +87,7 @@ class VkScraper(object):
             self.login_user, self.login_pass,
             auth_handler=self.two_factor_handler,
             captcha_handler=self.captcha_handler,
+            app_id=self.app_id,
             api_version='5.101',
         )
 
@@ -445,6 +448,7 @@ def main():
     parser.add_argument('--latest', action='store_true', default=False, help='Scrape new media since the last scrape')
     parser.add_argument('--verbose', '-v', type=int, default=0, help='Logging verbosity level')
     parser.add_argument('--offset', '-o', type=int, default=0, help='Media offset')
+    parser.add_argument('--app-id', '-a', type=int, default=2685278, help='Use a specific VK app id on requests')
 
     args = parser.parse_args()
 
@@ -474,3 +478,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
